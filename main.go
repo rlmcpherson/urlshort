@@ -28,9 +28,7 @@ func main() {
 	}
 
 	// connect to db
-	dbinfo := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
-		opts.DBUser, opts.DBPassword, opts.DBAddr, opts.DBName)
-	db, err := database.NewPGDB(dbinfo)
+	db, err := database.NewPGDB(opts.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
