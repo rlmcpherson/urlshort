@@ -57,7 +57,7 @@ func encodeHandler(db database.DB) http.Handler {
 			http.Error(w, fmt.Sprintf("error encoding %s: %s", longurl, err), http.StatusInternalServerError)
 			return
 		}
-		writeLogErr(w, []byte(shorturl))
+		writeLogErr(w, []byte(fmt.Sprintf("%s/%s", opts.Domain, shorturl)))
 	}
 
 	return http.HandlerFunc(handler)
@@ -75,8 +75,8 @@ func redirectHandler(db database.DB) http.Handler {
 		shorturl := r.URL.Path[len(redirectPath):]
 		if shorturl == "" {
 			writeLogErr(w, []byte("shorturl service"))
+			return
 		}
-		return
 		url, err := db.Decode(shorturl)
 		if err, ok := err.(database.ErrNotFound); ok {
 			http.Error(w, err.Error(), http.StatusNotFound)

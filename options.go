@@ -11,6 +11,7 @@ import (
 var opts struct {
 	Port        string `required:"true"`
 	DatabaseURL string `required:"true"`
+	Domain      string `required:"true"`
 }
 
 // optsFromEnv loads the options struct values from the environment.
