@@ -73,6 +73,10 @@ func redirectHandler(db database.DB) http.Handler {
 		}
 
 		shorturl := r.URL.Path[len(redirectPath):]
+		if shorturl == "" {
+			writeLogErr(w, []byte("shorturl service"))
+		}
+		return
 		url, err := db.Decode(shorturl)
 		if err, ok := err.(database.ErrNotFound); ok {
 			http.Error(w, err.Error(), http.StatusNotFound)
