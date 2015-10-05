@@ -65,7 +65,7 @@ func TestDecodeHandler(t *testing.T) {
 			reqMethod: "GET",
 			reqURL:    fmt.Sprintf("%sfoo.com", decodePath),
 			reqBody:   nil,
-			respCode:  http.StatusNotFound,
+			respCode:  http.StatusInternalServerError,
 			respStr:   "error decoding",
 		},
 	}
@@ -121,13 +121,61 @@ func TestEncodeHandler(t *testing.T) {
 			reqMethod: "POST",
 			reqURL:    encodePath,
 			reqBody:   bytes.NewBufferString("foo.com"),
-			respCode:  http.StatusNotFound,
+			respCode:  http.StatusInternalServerError,
 			respStr:   "error encoding foo.com",
 		},
 	}
 
 	for _, tt := range tests {
 		dh := encodeHandler(tt.db)
+		req, err := http.NewRequest(tt.reqMethod, tt.reqURL, tt.reqBody)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		w := httptest.NewRecorder()
+		dh.ServeHTTP(w, req)
+		t.Logf("%d - %s", w.Code, w.Body.String())
+		if w.Code != tt.respCode {
+			t.Errorf("expected %d, got %d", tt.respCode, w.Code)
+		}
+		if !strings.Contains(w.Body.String(), tt.respStr) {
+			t.Errorf("response: expected %s, got %s", tt.respStr, w.Body.String())
+		}
+	}
+}
+
+func TestRedirectHandler(t *testing.T) {
+
+	var tests = []handlerTest{
+		// valid request
+		{db: fakedb{returnErr: false},
+			reqMethod: "GET",
+			reqURL:    fmt.Sprintf("%sfoo.com", redirectPath),
+			reqBody:   bytes.NewBufferString("foo.com"),
+			respCode:  http.StatusMovedPermanently,
+			respStr:   `<a href="/decode foo.com">Moved Permanently</a>`,
+		},
+		// invalid method
+		{db: fakedb{returnErr: false},
+			reqMethod: "POST",
+			reqBody:   nil,
+			reqURL:    fmt.Sprintf("%sfoo.com", redirectPath),
+			respCode:  http.StatusMethodNotAllowed,
+			respStr:   "GET only",
+		},
+		// storage error
+		{db: fakedb{returnErr: true},
+			reqMethod: "GET",
+			reqURL:    fmt.Sprintf("%sfoo.com", redirectPath),
+			reqBody:   bytes.NewBufferString("foo.com"),
+			respCode:  http.StatusInternalServerError,
+			respStr:   "error decoding foo.com",
+		},
+	}
+
+	for _, tt := range tests {
+		dh := redirectHandler(tt.db)
 		req, err := http.NewRequest(tt.reqMethod, tt.reqURL, tt.reqBody)
 		if err != nil {
 			t.Fatal(err)

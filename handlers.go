@@ -20,9 +20,12 @@ func decodeHandler(db database.DB) http.Handler {
 
 		shorturl := r.URL.Path[len(decodePath):]
 		url, err := db.Decode(shorturl)
+		if err, ok := err.(database.ErrNotFound); ok {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
 		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			writeLogErr(w, []byte(fmt.Sprintf("url not found: %s", err)))
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		writeLogErr(w, []byte(url))
@@ -35,8 +38,7 @@ func encodeHandler(db database.DB) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method != "POST" {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			writeLogErr(w, []byte("use POST to encode urls"))
+			http.Error(w, "use POST to encode urls", http.StatusMethodNotAllowed)
 			return
 		}
 		if r.Body == nil {
@@ -52,8 +54,7 @@ func encodeHandler(db database.DB) http.Handler {
 
 		shorturl, err := db.Encode(string(longurl))
 		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			writeLogErr(w, []byte(fmt.Sprintf("error encoding %s: %s", longurl, err)))
+			http.Error(w, fmt.Sprintf("error encoding %s: %s", longurl, err), http.StatusInternalServerError)
 			return
 		}
 		writeLogErr(w, []byte(shorturl))
@@ -67,19 +68,23 @@ func redirectHandler(db database.DB) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method != "GET" {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			writeLogErr(w, []byte("use GET to decode urls"))
+			http.Error(w, "GET only", http.StatusMethodNotAllowed)
+			return
 		}
 
 		shorturl := r.URL.Path[len(redirectPath):]
 		url, err := db.Decode(shorturl)
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			writeLogErr(w, []byte(fmt.Sprintf("url not found: %s", err)))
+		if err, ok := err.(database.ErrNotFound); ok {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
 		}
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		http.Redirect(w, r, string(url), 301)
 	}
-
 	return http.HandlerFunc(handler)
 }
 
@@ -88,5 +93,4 @@ func writeLogErr(w io.Writer, b []byte) {
 	if err != nil {
 		log.Printf("write error: %s", err)
 	}
-
 }
