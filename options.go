@@ -9,10 +9,11 @@ import (
 
 // options, loaded from environment
 var opts struct {
-	Port   string `required:"true"`
-	DBAddr string `required:"true"`
-	DBUser string `required:"true"`
-	DBName string `required:"true"`
+	Port       string `required:"true"`
+	DBAddr     string `required:"true"`
+	DBUser     string `required:"true"`
+	DBPassword string `required:"true"`
+	DBName     string `required:"true"`
 }
 
 // optsFromEnv loads the options struct values from the environment.

@@ -20,12 +20,20 @@ const (
 	redirectPath = "/"
 )
 
+
 func main() {
 	// load options from env
+	if err := optsFromEnv(); err != nil {
+		log.Fatal(err)
+	}
 
 	// connect to db
-
-	var db database.DB
+	dbinfo := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+		opts.DBUser, opts.DBPassword, opts.DBAddr, opts.DBName)
+	db, err := database.NewPGDB(dbinfo)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// route handlers
 	http.Handle(encodePath, encodeHandler(db))
