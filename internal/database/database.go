@@ -61,7 +61,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var urlChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const urlChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 const urlLen = 7 // shortened urls have a fixed length of 7
 
