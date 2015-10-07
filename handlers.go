@@ -73,10 +73,16 @@ func redirectHandler(db database.DB) http.Handler {
 		}
 
 		shorturl := r.URL.Path[len(redirectPath):]
-		if shorturl == "" {
-			writeLogErr(w, []byte(instructions))
+		if shorturl == "" { // display usage
+			usage, err := ioutil.ReadFile("usage.html")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			writeLogErr(w, usage)
 			return
 		}
+
 		url, err := db.Decode(shorturl)
 		if err, ok := err.(database.ErrNotFound); ok {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -98,6 +104,3 @@ func writeLogErr(w io.Writer, b []byte) {
 		log.Printf("write error: %s", err)
 	}
 }
-
-const instructions = `<html><h3>urlshort: url shortening api and service</h3>
-<p>POST to to /encode for a shortened url</p></html>`

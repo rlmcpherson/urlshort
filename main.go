@@ -1,9 +1,5 @@
 // urlshort: url shortening service
 
-// run with -help for usage
-
-// depends on go version 1.5 or later
-
 package main
 
 import (
@@ -19,7 +15,6 @@ const (
 	decodePath   = "/decode/"
 	redirectPath = "/"
 )
-
 
 func main() {
 	// load options from env

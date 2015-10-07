@@ -1,0 +1,27 @@
+<html>
+  <h3>urlshort: url shortening api and service</h3>
+  <p>POST to to /encode for a shortened url</p>
+  <p>to decode a shortened url without a redirect GET the shortened code at /decode/</p>
+
+  <h4> example </h4>
+  <ul>
+    <li>encode url: 
+      <pre>
+    ❯ curl -X POST -d 'http://www.google.com' http://short.randallmcpherson.com/encode/     <br>          http://short.randallmcpherson.com/rDiNVbX 
+      </pre>
+    </li>
+    <li> decode short url:
+      <pre>
+      ❯ curl http://short.randallmcpherson.com/decode/rDiNVbX <br>
+        http://www.google.com                                                                     
+      </pre> 
+    </li>
+    <li> follow short url: (can also use browser)
+      <pre>
+      ❯ curl http://short.randallmcpherson.com/rDiNVbX <br>
+        &lt;a href="http://www.google.com"&gt;Moved Permanently&lt;/a&gt;.
+      </pre> 
+    </li>
+  </ul>
+
+</html>
